@@ -22,9 +22,10 @@ func getJWTSecret() string {
 	return secret
 }
 
-func GenerateToken(email string, userId uint) (string, error) {
+func GenerateToken(email, phone *string, userId uint) (string, error) {
 	claims := jwt.MapClaims{
 		"email":  email,
+		"phone":  phone,
 		"userID": userId,
 		"exp":    time.Now().Add(time.Hour * 24).Unix(), // Token berlaku 1 hari
 	}

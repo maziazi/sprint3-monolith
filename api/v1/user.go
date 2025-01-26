@@ -10,6 +10,9 @@ func RegisterUserRouter(router *gin.RouterGroup) {
 
 	{
 		router.POST("/register/email", handler.RegisterUserEmail)
+		router.POST("/register/phone", handler.RegisterUserPhone)
+		router.POST("/login/email", handler.LoginUserEmail)
+		router.POST("/login/phone", handler.LoginUserPhone)
 	}
 	//Kegunaan Protected itu ntar buat kalau mau akses itu harus login
 	protected := router.Group("/user")
