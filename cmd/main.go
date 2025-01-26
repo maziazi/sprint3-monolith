@@ -44,6 +44,7 @@ func main() {
 	{
 		//v1.RegisterActivityRoutes(v1Group, handlerInstance)
 		v1.RegisterUserRouter(v1Group)
+		v1.RegisterFileRoutes(v1Group)
 	}
 
 	port := os.Getenv("PORT")
