@@ -10,6 +10,7 @@ import (
 	"github.com/nfnt/resize"
 	"image"
 	"image/jpeg"
+	"image/png"
 	"log"
 	"os"
 	"path/filepath"
@@ -75,6 +76,7 @@ func UploadToS3(filePath string) (string, error) {
 
 // CreateThumbnailAndUploadToS3 membuat thumbnail dari file gambar dan mengunggahnya ke S3.
 // CreateThumbnailAndUploadToS3 membuat thumbnail dari file gambar dan mengunggahnya ke S3.
+// CreateThumbnailAndUploadToS3 membuat thumbnail dari file gambar dan mengunggahnya ke S3.
 func CreateThumbnailAndUploadToS3(filePath string) (string, error) {
 	log.Printf("Starting thumbnail creation for file: %s", filePath)
 
@@ -107,17 +109,27 @@ func CreateThumbnailAndUploadToS3(filePath string) (string, error) {
 	log.Println("Thumbnail created successfully.")
 
 	// Menyimpan thumbnail ke buffer
-	log.Println("Encoding the thumbnail to JPEG format...")
 	var buf bytes.Buffer
-	err = jpeg.Encode(&buf, thumb, nil)
+	switch format {
+	case "jpeg", "jpg":
+		log.Println("Encoding the thumbnail to JPEG format...")
+		err = jpeg.Encode(&buf, thumb, nil)
+	case "png":
+		log.Println("Encoding the thumbnail to PNG format...")
+		err = png.Encode(&buf, thumb)
+	default:
+		log.Printf("Unsupported image format: %s", format)
+		return "", fmt.Errorf("unsupported image format: %s", format)
+	}
+
 	if err != nil {
-		log.Printf("Error encoding thumbnail to JPEG: %v", err)
+		log.Printf("Error encoding thumbnail: %v", err)
 		return "", fmt.Errorf("failed to encode thumbnail: %v", err)
 	}
 	log.Printf("Thumbnail encoded successfully. Buffer size: %d bytes", buf.Len())
 
 	// Menghasilkan nama file unik untuk thumbnail
-	thumbnailFileName := GenerateUniqueFileName("jpg")
+	thumbnailFileName := GenerateUniqueFileName(format)
 	log.Printf("Generated unique filename for thumbnail: %s", thumbnailFileName)
 
 	// Mengunggah thumbnail ke S3
