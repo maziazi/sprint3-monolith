@@ -2,10 +2,9 @@ package service
 
 import (
 	"context"
+	"log"
 	"sprint3/internal/model"
 	"sprint3/pkg/database"
-
-	"log"
 )
 
 func AddFile(fileURL, thumbnailURL string) (*model.File, error) {
