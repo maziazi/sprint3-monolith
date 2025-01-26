@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"os"
+	v1 "sprint3/api/v1"
 	"sprint3/pkg/database"
 )
 
@@ -42,6 +43,7 @@ func main() {
 	v1Group := router.Group("/v1")
 	{
 		//v1.RegisterActivityRoutes(v1Group, handlerInstance)
+		v1.RegisterUserRouter(v1Group)
 	}
 
 	port := os.Getenv("PORT")
