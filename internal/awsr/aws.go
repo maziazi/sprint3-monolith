@@ -74,36 +74,60 @@ func UploadToS3(filePath string) (string, error) {
 }
 
 // CreateThumbnailAndUploadToS3 membuat thumbnail dari file gambar dan mengunggahnya ke S3.
+// CreateThumbnailAndUploadToS3 membuat thumbnail dari file gambar dan mengunggahnya ke S3.
 func CreateThumbnailAndUploadToS3(filePath string) (string, error) {
-	// Membaca file image
+	log.Printf("Starting thumbnail creation for file: %s", filePath)
+
+	// Membuka file gambar
+	log.Println("Opening the image file...")
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", err
+		log.Printf("Error opening file %s: %v", filePath, err)
+		return "", fmt.Errorf("failed to open file: %v", err)
 	}
 	defer file.Close()
+	log.Println("File opened successfully.")
 
-	// Meng-decode gambar
-	img, _, err := image.Decode(file)
+	// Decode gambar
+	log.Println("Decoding the image...")
+	img, format, err := image.Decode(file)
 	if err != nil {
-		return "", err
+		log.Printf("Error decoding the image: %v", err)
+		return "", fmt.Errorf("failed to decode image: %v", err)
 	}
+	log.Printf("Image decoded successfully. Format: %s", format)
 
-	// Resize gambar menjadi thumbnail (misalnya 100x100px)
+	// Membuat thumbnail (ukuran 100x100px)
+	log.Println("Resizing the image to create a thumbnail...")
 	thumb := resize.Thumbnail(100, 100, img, resize.Lanczos3)
+	if thumb == nil {
+		log.Println("Failed to resize the image.")
+		return "", fmt.Errorf("failed to resize the image")
+	}
+	log.Println("Thumbnail created successfully.")
 
 	// Menyimpan thumbnail ke buffer
+	log.Println("Encoding the thumbnail to JPEG format...")
 	var buf bytes.Buffer
 	err = jpeg.Encode(&buf, thumb, nil)
 	if err != nil {
-		return "", err
+		log.Printf("Error encoding thumbnail to JPEG: %v", err)
+		return "", fmt.Errorf("failed to encode thumbnail: %v", err)
 	}
+	log.Printf("Thumbnail encoded successfully. Buffer size: %d bytes", buf.Len())
 
-	// Menyimpan thumbnail ke S3
+	// Menghasilkan nama file unik untuk thumbnail
 	thumbnailFileName := GenerateUniqueFileName("jpg")
+	log.Printf("Generated unique filename for thumbnail: %s", thumbnailFileName)
+
+	// Mengunggah thumbnail ke S3
+	log.Printf("Uploading thumbnail %s to S3...", thumbnailFileName)
 	thumbnailURL, err := uploadToS3(buf.Bytes(), thumbnailFileName)
 	if err != nil {
-		return "", err
+		log.Printf("Error uploading thumbnail %s to S3: %v", thumbnailFileName, err)
+		return "", fmt.Errorf("failed to upload thumbnail: %v", err)
 	}
+	log.Printf("Thumbnail uploaded successfully. URL: %s", thumbnailURL)
 
 	return thumbnailURL, nil
 }
